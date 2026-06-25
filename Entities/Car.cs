@@ -1,6 +1,6 @@
-public class Car
+public class Car : Vehicle
 {
-    public int Id {get; set;}
-    public string RegistrationNumber {get;set;}
-    public string Color {get;set;}
+    public override int Id {get; set;}
+    public override string RegistrationNumber {get;set;}
+    public override string Color {get;set;}
 }

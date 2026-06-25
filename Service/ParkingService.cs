@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-public class ParkingService
+public class ParkingService : IParkingService
 {
     private AppDbContext _context;
     public ParkingService(AppDbContext context)
@@ -8,22 +8,17 @@ public class ParkingService
         _context = context;
     }
 
-    public async void CreateParkingLot(int capacity)
+    public async Task CreateParkingLot(int capacity)
     {
         ParkingLot lot = new ParkingLot
         {
-            ParkingSpots = new List<ParkingSpot>(capacity)
+            ParkingSpots = new List<ParkingSpot>()
         };
 
         for (int i = 0; i < capacity; i++)
         {
-            ParkingSpot spot = new ParkingSpot
-            {
-                IsVacant = true,
-                ParkingLot = lot,
-                Car = null
-            };
-            _context.ParkingSpots.Add(spot);
+            ParkingSpot spot = new ParkingSpot();
+            lot.ParkingSpots.Add(spot);
         }
 
         _context.ParkingLots.Add(lot);
@@ -31,44 +26,54 @@ public class ParkingService
         await _context.SaveChangesAsync();
     }
 
-    public async void ParkCar(Car car)
+    public async Task<string> ParkCar(Vehicle vehicle)
     {
-        ParkingSpot? spot = _context.ParkingSpots.FirstOrDefault(l => l.IsVacant==true);
-        if (spot != null)
+        if (vehicle != null)
         {
-            spot.Car = car;
-            spot.IsVacant = false;
-            await _context.SaveChangesAsync();
+            //Park the car inside any available parking spot of any parking lot
+            ParkingSpot? spot = _context.ParkingSpots.FirstOrDefault(l => l.Vehicle == null);
+            if (spot != null)
+            {
+                spot.Park(vehicle);
+                await _context.SaveChangesAsync();
+                return "Vehicle parked.";
+            }
+            else
+            {
+                return "Parking full. Please come back later.";
+            }
         }
         else
         {
-            Console.WriteLine("Parking full. Please come back later.");
+            throw new ArgumentException("Please provide valid vehicle");
         }
     }
 
-    public async void UnParkCar(int spotNumber)
+    public async Task<string> UnParkCar(int spotNumber)
     {
         ParkingSpot? spot = _context.ParkingSpots.FirstOrDefault(l => l.SpotNumber==spotNumber);
         if (spot != null)
         {
-            spot.Car = null;
-            spot.IsVacant = true;
+            spot.Vacate();
             await _context.SaveChangesAsync();
+            return "Vehicle removed.";
         }
         else
         {
-            Console.WriteLine("Vehicle unparked already");
+            return "Vehicle unparked already";
         }
     }
 
-    public void DisplayStatus()
+    public async Task<string> DisplayStatus()
     {
-        List<ParkingSpot>? spots = _context.ParkingSpots.Include(s => s.Car).Where(s => s.IsVacant==false && s.Car!=null).ToList();
+        List<ParkingSpot>? spots = await _context.ParkingSpots.Include(s => s.Vehicle).Where(s => s.Vehicle!=null).ToListAsync();
         Console.WriteLine("Spot, Registration No, Color");
+        string result = "";
         foreach (ParkingSpot item in spots)
         {
-            Console.WriteLine(item.SpotNumber + ", " + item.Car.RegistrationNumber + ", " + item.Car.Color);
+            result += item.SpotNumber + ", " + item.Vehicle?.RegistrationNumber + ", " + item.Vehicle?.Color + "\n";
         }
+        return result;
     }
 
 }
