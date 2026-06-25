@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
 
     public DbSet<ParkingLot> ParkingLots { get; set; }
     public DbSet<ParkingSpot> ParkingSpots {get; set;}
+    public DbSet<ParkingCharges> ParkingCharges {get; set;}
     public DbSet<Car> Cars { get; set; }
     public DbSet<Truck> Trucks { get; set; }
 }
