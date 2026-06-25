@@ -31,7 +31,7 @@ public class ParkingService : IParkingService
         if (vehicle != null)
         {
             //Park the car inside any available parking spot of any parking lot
-            ParkingSpot? spot = _context.ParkingSpots.FirstOrDefault(l => l.Vehicle == null);
+            ParkingSpot? spot = await _context.ParkingSpots.FirstOrDefaultAsync(l => l.Vehicle == null);
             if (spot != null)
             {
                 spot.Park(vehicle);
@@ -51,7 +51,7 @@ public class ParkingService : IParkingService
 
     public async Task<string> UnParkCar(int spotNumber)
     {
-        ParkingSpot? spot = _context.ParkingSpots.FirstOrDefault(l => l.SpotNumber==spotNumber);
+        ParkingSpot? spot = await _context.ParkingSpots.FirstOrDefaultAsync(l => l.SpotNumber==spotNumber);
         if (spot != null)
         {
             spot.Vacate();
@@ -60,20 +60,17 @@ public class ParkingService : IParkingService
         }
         else
         {
-            return "Vehicle unparked already";
+            return "No vehicle available at this spot";
         }
     }
 
-    public async Task<string> DisplayStatus()
+    public async Task<List<VehicleStatus>> DisplayStatus()
     {
-        List<ParkingSpot>? spots = await _context.ParkingSpots.Include(s => s.Vehicle).Where(s => s.Vehicle!=null).ToListAsync();
-        Console.WriteLine("Spot, Registration No, Color");
-        string result = "";
-        foreach (ParkingSpot item in spots)
+        return await _context.ParkingSpots.Include(s => s.Vehicle).Where(s => s.Vehicle!=null).Select(s => new VehicleStatus
         {
-            result += item.SpotNumber + ", " + item.Vehicle?.RegistrationNumber + ", " + item.Vehicle?.Color + "\n";
-        }
-        return result;
+            SpotNumber = s.SpotNumber,
+            RegistrationNumber = s.Vehicle.RegistrationNumber,
+            Color = s.Vehicle.Color
+        }).ToListAsync();
     }
-
 }

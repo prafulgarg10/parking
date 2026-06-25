@@ -3,9 +3,9 @@ using System.Diagnostics.CodeAnalysis;
 
 public abstract class Vehicle
 {
-    public abstract int Id {get; set;}
+    public int Id {get; set;}
     [NotNull, Required]
-    public abstract string RegistrationNumber {get;set;}
+    public string RegistrationNumber {get;set;}
     [NotNull, Required]
-    public abstract string Color {get;set;}
+    public string Color {get;set;}
 } 
