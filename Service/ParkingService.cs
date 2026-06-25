@@ -66,8 +66,7 @@ public class ParkingService : IParkingService
 
     public async Task<List<VehicleStatus>> DisplayStatus()
     {
-        var val = await _context.ParkingSpots.Include(s => s.Vehicle).Where(s => s.Vehicle!=null).ToListAsync();
-        return await _context.ParkingSpots.Include(s => s.Vehicle).Where(s => s.Vehicle!=null).Select(s => new VehicleStatus
+        return await _context.ParkingSpots.AsNoTracking().Include(s => s.Vehicle).Where(s => s.Vehicle!=null).Select(s => new VehicleStatus
         {
             SpotNumber = s.SpotNumber,
             RegistrationNumber = s.Vehicle.RegistrationNumber,
